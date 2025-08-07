@@ -1,20 +1,12 @@
-import os
-import boto3
-import tempfile
 import argparse
 from templates import lake_condition_summary
+from functions import upload
 
 def main(params):
     for lake in ["geneva"]:
         data = lake_condition_summary("geneva")
         if params["upload"]:
-            bucket_key = params["bucket"].split(".")[0].split("//")[1]
-            s3 = boto3.client("s3", aws_access_key_id=params["aws_id"], aws_secret_access_key=params["aws_key"])
-            with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
-                temp_filename = temp_file.name
-                temp_file.write(data)
-            s3.upload_file(temp_filename, bucket_key, "aisummary/{}/forecast.json".format(lake))
-            os.remove(temp_filename)
+            upload(data, "aisummary/{}/forecast.json".format(lake), params)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

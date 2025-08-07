@@ -1,3 +1,7 @@
+import os
+import json
+import boto3
+import tempfile
 import requests
 from datetime import datetime, timedelta
 from any_llm import completion
@@ -46,3 +50,12 @@ def dict_to_markdown_table(data_dict):
         rows.append(row)
     table = header_row + "\n" + separator_row + "\n" + "\n".join(rows)
     return table
+
+def upload(data, remote_path, params):
+    bucket_key = params["bucket"].split(".")[0].split("//")[1]
+    s3 = boto3.client("s3", aws_access_key_id=params["aws_id"], aws_secret_access_key=params["aws_key"])
+    with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
+        temp_filename = temp_file.name
+        temp_file.write(json.dumps(data))
+    s3.upload_file(temp_filename, bucket_key, remote_path)
+    os.remove(temp_filename)
