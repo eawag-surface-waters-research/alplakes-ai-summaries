@@ -4,7 +4,7 @@ from functions import upload
 
 def main(params):
     for lake in ["geneva"]:
-        data = lake_condition_summary("geneva")
+        data = lake_condition_summary(lake)
         if params["upload"]:
             upload(data, "aisummary/{}/forecast.json".format(lake), params)
 
