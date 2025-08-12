@@ -53,9 +53,11 @@ def dict_to_markdown_table(data_dict):
 
 def upload(data, remote_path, params):
     bucket_key = params["bucket"].split(".")[0].split("//")[1]
+    print(f"Uploading response to {bucket_key}")
     s3 = boto3.client("s3", aws_access_key_id=params["aws_id"], aws_secret_access_key=params["aws_key"])
     with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
         temp_filename = temp_file.name
         temp_file.write(json.dumps(data))
     s3.upload_file(temp_filename, bucket_key, remote_path)
     os.remove(temp_filename)
+    print("Print completed upload successfully")

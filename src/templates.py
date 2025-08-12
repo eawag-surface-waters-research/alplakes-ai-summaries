@@ -15,9 +15,12 @@ def lake_condition_summary(lake):
         f"{forecast_table}\n\n"
         "Please describe the trend over the days. Is the lake warming or cooling?"
     )
+    print(f"Calling {model} with prompt")
     response = call_llm(model, prompt)
     output = {"produced": int(datetime.now().timestamp()), "data": {"EN": response}, "model": model, "prompt": prompt}
+
     for language in languages:
+        print(f'Translating response to {language["name"]}')
         lp = f'Translate the following into {language["name"]}: {response}'
         output["data"][language["short"]] = call_llm(model, lp)
     return output
