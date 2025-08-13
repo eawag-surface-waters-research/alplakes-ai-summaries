@@ -34,6 +34,39 @@ def simstrat_daily_average_forecast(lake):
     return dict_to_markdown_table(out)
 
 
+def simstrat_last_month(lake):
+    end = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+    start = end - timedelta(days=30)
+    data = call_url(
+        f'https://alplakes-api.eawag.ch/simulations/1d/point/simstrat/{lake}/{start.strftime("%Y%m%d%H%M")}/{end.strftime("%Y%m%d%H%M")}/0?resample=daily&variables=T')
+    out = {
+        "Date": [x[:10] for x in data["time"]],
+        "Temperature (°C)": data["variables"]["T"]["data"]
+    }
+    return dict_to_markdown_table(out)
+
+def simstrat_doy(lake):
+    now = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    tomorrow = now + timedelta(days=1)
+    now_doy = now.timetuple().tm_yday - 1
+    data = call_url(f'https://alplakes-api.eawag.ch/simulations/1d/doy/simstrat/{lake}/T/0')
+    dt1 = datetime.fromisoformat(data["start_time"])
+    dt2 = datetime.fromisoformat(data["end_time"])
+    years = dt2.year - dt1.year - ((dt2.month, dt2.day) < (dt1.month, dt1.day))
+    data2 = call_url(
+        f'https://alplakes-api.eawag.ch/simulations/1d/point/simstrat/{lake}/{now.strftime("%Y%m%d%H%M")}/{tomorrow.strftime("%Y%m%d%H%M")}/0?resample=daily&variables=T')
+    out = {
+        "": ["Today", f"{years} year mean", f"{years} year min", f"{years} year max"],
+        "Temperature (°C)": [
+            data2["variables"]["T"]["data"][0],
+            data["variables"]["mean"]["data"][now_doy],
+            data["variables"]["min"]["data"][now_doy],
+            data["variables"]["max"]["data"][now_doy]
+        ]
+    }
+    return dict_to_markdown_table(out)
+
+
 def dict_to_markdown_table(data_dict):
     if not data_dict:
         return ""
@@ -60,4 +93,4 @@ def upload(data, remote_path, params):
         temp_file.write(json.dumps(data))
     s3.upload_file(temp_filename, bucket_key, remote_path)
     os.remove(temp_filename)
-    print("Print completed upload successfully")
+    print("Completed upload successfully")
