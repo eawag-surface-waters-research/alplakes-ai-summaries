@@ -31,7 +31,7 @@ def simstrat_daily_average_forecast(lake):
         "Date": [x[:10] for x in data["time"]],
         "Temperature (°C)": data["variables"]["T"]["data"]
     }
-    return dict_to_markdown_table(out)
+    return dict_to_csv(out)
 
 
 def simstrat_last_month(lake):
@@ -43,7 +43,7 @@ def simstrat_last_month(lake):
         "Date": [x[:10] for x in data["time"]],
         "Temperature (°C)": data["variables"]["T"]["data"]
     }
-    return dict_to_markdown_table(out)
+    return dict_to_csv(out)
 
 def simstrat_doy(lake):
     now = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -64,7 +64,25 @@ def simstrat_doy(lake):
             data["variables"]["max"]["data"][now_doy]
         ]
     }
-    return dict_to_markdown_table(out)
+    return dict_to_csv(out)
+
+
+def dict_to_csv(data_dict):
+    if not data_dict:
+        return ""
+
+    headers = list(data_dict.keys())
+    num_rows = len(next(iter(data_dict.values())))
+
+    for col in data_dict.values():
+        if len(col) != num_rows:
+            raise ValueError("All columns must have the same number of rows.")
+
+    lines = [",".join(headers)]
+    for i in range(num_rows):
+        lines.append(",".join(str(data_dict[header][i]) for header in headers))
+
+    return "\n".join(lines)
 
 
 def dict_to_markdown_table(data_dict):
