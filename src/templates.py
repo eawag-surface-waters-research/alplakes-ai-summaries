@@ -55,7 +55,7 @@ def lake_condition_summary(lake):
         {"name": "german", "short": "DE"},
         {"name": "italian", "short": "IT"},
     ]
-    model = "openai/gpt-5"
+    model = "openai/gpt-5-mini"
     forecast_table = simstrat_daily_average_forecast(lake)
     last_month_table = simstrat_last_month(lake)
     doy_table = simstrat_doy(lake)
@@ -69,6 +69,7 @@ def lake_condition_summary(lake):
 
     print(f"Calling {model} with prompt")
     response = call_llm(model, prompt)
+
     output = {"produced": int(datetime.now().timestamp()), "data": {"EN": response}, "model": model, "prompt": prompt}
 
     for language in languages:
