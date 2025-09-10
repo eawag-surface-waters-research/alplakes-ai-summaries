@@ -2,51 +2,119 @@ from datetime import datetime
 from functions import call_llm, simstrat_daily_average_forecast, simstrat_doy, simstrat_last_month
 
 lake_condition_summary_prompt = """
-## Lake Temperature Forecast Prompt
+## Lake Temperature Forecast Prompt (Natural Language Version)
 
 **CONTEXT**  
 - Today’s date: **{today_str}**  
-- Role: Professional limnologist.  
-- Task: Produce a lake surface temperature forecast report.  
-- Tone: **Formal**, **concise**, **scientific**.  
-- Length: **One paragraph**, **<300 words**, **no new lines**.  
+- Task: Write a brief lake temperature summary like a local weather forecast
+- Style: Conversational and clear - how a meteorologist would actually speak
+- Format: One paragraph, 3 sentences, 80-120 words total
 
-**OUTPUT RULES**  
-1. Do **not** include dates in the text.  
-2. Do **not** include calls to action or recommendations.  
-3. Round all temperature values to **1 decimal place**, no trailing zeros.  
-4. Only include absolute temperature values when comparing to historical statistics.  
-5. Paragraph must contain **exactly three sentences** in the order below.  
-
-**SENTENCE 1 — Forecast Trend**  
-- Use only **FORECAST_TEMPERATURES**.  
-- Describe trend over the forecast period.  
-- If any single-day change > 0.5 °C, call it a “rapid cooling/ heating” increase or decrease; otherwise, describe as gradual cooling/ heating or stable.  
-- State whether temperatures are increasing, decreasing, or stable overall.  
-
-**SENTENCE 2 — Historical Comparison**  
-- Use **HISTORICAL_STATS**.  
-- Compare today’s temperature to the mean, min, and max for this day of year.
-- Indicate whether today’s temperature is above, below, or near each statistic.  
-- Do **not** mention the min if above the mean, and do **not** mention the max if below the mean.  
-
-**SENTENCE 3 — Past 30-Day Trend**  
-- Use only **PAST_30_DAYS_TEMPERATURES**.  
-- Describe the trend over the 30 days.
+**CORE RULES**
+- Write like you're talking, not writing a scientific paper
+- Keep it simple - no technical jargon
+- Be concise - short, clear sentences
+- Sound natural - like a weather forecast on the radio
 
 **FORECAST_TEMPERATURES**  
 {forecast_table}
 
-**PAST_30_DAYS_TEMPERATURES**  
-{last_month_table}
-
 **HISTORICAL_STATS**  
 {doy_table}
 
-**EXAMPLE IDEAL OUTPUTS**  
-Example 1: Surface temperatures are projected to rise gradually over the next four days, with no rapid daily changes expected. Today’s value stands well above the long-term mean and minimum for this time of year, yet remains below the historical maximum. Over the past month, a cold spell caused the lake to cool before increasing again over the last 10 days.  
-Example 2: A gradual upward trend in surface temperatures is expected over the next five days, with daily changes remaining moderate. Current conditions exceed both the multi-decade mean and historical minimum for this day, while remaining beneath the recorded maximum. Over the last thirty days, the lake has warmed consistently, reflecting an overall increase of 2.9 degrees.  
-Example 3: Forecast data indicate a stable to gently increasing temperature pattern over the coming days, without any rapid shifts. Present readings are markedly higher than the long-term mean and minimum for the date but have not approached the record high. Analysis of the past month reveals a sustained warming phase totaling approximately 2.9 degrees.
+**PAST_30_DAYS_TEMPERATURES**  
+{last_month_table}
+
+**OUTPUT STRUCTURE**
+Sentence 1: What's happening this week
+Source: **FORECAST_TEMPERATURES**
+- Just tell us if temps are going up, down, or staying the same
+- Mention the actual temperature range (like "around 21 degrees")
+- Keep it under 30 words
+Good examples:
+- "Lake temperatures will hold steady around 21 degrees this week."
+- "We'll see a slight cooling trend, dropping from 21.3 to 21 degrees by Thursday."
+- "Expect stable conditions with temperatures hovering near 21 degrees."
+Avoid:
+- "thermal regime" → just say "temperatures"
+- "modest cooling pattern" → say "slight cooling"
+- "drift gently" → say "drop slowly"
+
+Sentence 2: How this compares to normal
+Source: **HISTORICAL_STATS**  
+- Simply state if it's warmer or cooler than usual
+- Mention the actual numbers
+- Keep it under 30 words
+Good examples:
+- "That's about a degree above the September average of 20 degrees."
+- "We're running warmer than normal but still below the record of 22.9 degrees."
+- "These readings are slightly above the typical 20 degrees for early September."
+Avoid:
+- "41-year mean" → say "average" or "normal"
+- "seasonal variability" → skip this entirely
+- "falling well short of" → say "below"
+
+Sentence 3: What happened last month
+Source: **PAST_30_DAYS_TEMPERATURES**
+- Describe the recent trend in plain English
+- Mention specific temperature change if significant
+- Keep it under 35 words
+Good examples:
+- "The lake has cooled about 4 degrees since mid-August's peak of 25 degrees."
+- "We've seen steady cooling over the past month, down from 25 degrees in August."
+- "Temperatures have dropped significantly from last month's highs near 25 degrees."
+Avoid:
+- "substantial cooling regime" → say "cooled quite a bit"
+- "thermal evolution" → just describe what happened
+- "marked shift that underscores" → keep it simple
+
+**OPENING VARIETY**
+Rotate these simple starts:
+- Day 1: "Lake temperatures..."
+- Day 2: "The lake..."
+- Day 3: "We'll see..."
+- Day 4: "Expect..."
+- Day 5: "Surface temperatures..."
+
+**TEMPERATURE RULES**
+- Round to 1 decimal: 21.302 → 21.3
+- Drop trailing zeros: 21.0 → 21
+- Only use "°C" when quoting temperature
+
+**BANNED PHRASES**
+Never use these academic/technical terms:
+- thermal regime, thermal profile, thermal evolution
+- modest/marked/substantial (use simple/slight/big instead)
+- drift, persist, underscore, situate
+- seasonal variability, band of variability
+- moderation, adjustment, pattern
+
+**GOOD WORD CHOICES**
+Use everyday words:
+- going up/down, rising/falling, warming/cooling
+- steady, stable, little change
+- above/below normal, warmer/cooler than usual
+- typical, average, normal
+- peak, high, low
+
+**QUALITY CHECK**
+□ Sounds like a weather forecast, not a research paper 
+□ 3 sentences, 80-120 words total 
+□ Each sentence under 35 words 
+□ No technical jargon 
+□ Would sound natural on the radio 
+□ Clear and to the point
+
+**EXAMPLE OUTPUT** (Natural Style)
+Good Example: "Lake temperatures will stay steady around 21.3 degrees through midweek before cooling slightly to 21 degrees by Thursday. That's running about a degree warmer than the September average of 20 degrees, though still below the record high of 22.9. The lake has cooled nearly 4 degrees from mid-August when we hit 25 degrees, following the typical late-summer pattern."
+Why this works:
+- Short, clear sentences (27, 24, 22 words)
+- Natural language ("stay steady," "running warmer," "hit 25 degrees")
+- Sounds like someone talking
+- Total: 73 words, perfectly concise
+
+**FINAL INSTRUCTION**
+Generate a natural-sounding lake temperature summary using everyday language. Write it like you're a local meteorologist giving a quick update on the radio - friendly, clear, and to the point. Three sentences only, keeping each one short and simple. Use the data provided but translate it into plain English that anyone would understand.
 """
 
 def lake_condition_summary(lake):
@@ -69,6 +137,9 @@ def lake_condition_summary(lake):
 
     print(f"Calling {model} with prompt")
     response = call_llm(model, prompt)
+
+    print(response)
+    exit()
 
     output = {"produced": int(datetime.now().timestamp()), "data": {"EN": response}, "model": model, "prompt": prompt}
 
