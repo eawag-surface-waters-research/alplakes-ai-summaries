@@ -116,9 +116,9 @@ def lake_condition_summary(lake):
         {"name": "italian", "short": "IT"},
     ]
     model = "openai/gpt-5-mini"
-    forecast_table = simstrat_daily_average_forecast(lake)
-    last_month_table = simstrat_last_month(lake)
-    doy_table = simstrat_doy(lake)
+    forecast_table = simstrat_daily_average_forecast(lake["simstrat"])
+    last_month_table = simstrat_last_month(lake["simstrat"])
+    doy_table = simstrat_doy(lake["simstrat"])
 
     prompt = lake_condition_summary_prompt.format(
         today_str=datetime.now().strftime('%B %d, %Y'),

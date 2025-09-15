@@ -7,22 +7,27 @@ from functions import upload
 
 def process_lake(lake, params):
     start_time = time.time()
-    print(f"Starting processing for {lake}...")
+    print(f"Starting processing for {lake['id']}...")
     data = lake_condition_summary(lake)
     if params.get("upload"):
-        upload(data, f"aisummary/{lake}/forecast.json", params)
+        upload(data, f"aisummary/{lake['id']}/forecast.json", params)
     duration = time.time() - start_time
-    print(f"Finished processing for {lake} in {duration:.2f} seconds.")
+    print(f"Finished processing for {lake['id']} in {duration:.2f} seconds.")
     return lake
 
 def main(params):
-    lakes = ["geneva", "garda", "upperconstance", "greifensee", "mondsee", "bled"]
+    lakes = [{"id": "geneva", "simstrat": "geneva"},
+             {"id": "garda", "simstrat": "garda"},
+             {"id": "constance", "simstrat": "upperconstance"},
+             {"id": "greifensee", "simstrat": "greifensee"},
+             {"id": "mondsee", "simstrat": "mondsee"},
+             {"id": "bled", "simstrat": "bled"}]
     max_workers = params.get("parallel", 2)
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = [executor.submit(process_lake, lake, params) for lake in lakes]
         for future in as_completed(futures):
             lake = future.result()
-            print(f"Completed processing for {lake}")
+            print(f"Completed processing for {lake['id']}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
