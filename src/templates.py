@@ -32,8 +32,8 @@ Source: **FORECAST_TEMPERATURES**
 - Mention the actual temperature range (like "around 21 degrees")
 - Keep it under 30 words
 Good examples:
-- "Lake temperatures will hold steady around 21 degrees this week."
-- "We'll see a slight cooling trend, dropping from 21.3 to 21 degrees by Thursday."
+- "Lake temperatures are expected to stay around 21°C this week."
+- "A slight cooling trend is expected, with temperatures dipping from 21.3°C to 21°C by Thursday."
 - "Expect stable conditions with temperatures hovering near 21 degrees."
 Avoid:
 - "thermal regime" → just say "temperatures"
@@ -47,8 +47,8 @@ Source: **HISTORICAL_STATS**
 - Keep it under 30 words
 Good examples:
 - "That's about a degree above the September average of 20 degrees."
-- "We're running warmer than normal but still below the record of 22.9 degrees."
-- "These readings are slightly above the typical 20 degrees for early September."
+- "Temperatures are higher than normal but still below the record high of 22.9°C."
+- "These readings are slightly higher than the typical 20 degrees expected in early September."
 Avoid:
 - "41-year mean" → say "average" or "normal"
 - "seasonal variability" → skip this entirely
@@ -67,14 +67,6 @@ Avoid:
 - "substantial cooling regime" → say "cooled quite a bit"
 - "thermal evolution" → just describe what happened
 - "marked shift that underscores" → keep it simple
-
-**OPENING VARIETY**
-Rotate these simple starts:
-- Day 1: "Lake temperatures..."
-- Day 2: "The lake..."
-- Day 3: "We'll see..."
-- Day 4: "Expect..."
-- Day 5: "Surface temperatures..."
 
 **TEMPERATURE RULES**
 - Round to 1 decimal: 21.302 → 21.3
@@ -106,12 +98,12 @@ Use everyday words:
 □ Clear and to the point
 
 **EXAMPLE OUTPUT** (Natural Style)
-Good Example: "Lake temperatures will stay steady around 21.3 degrees through midweek before cooling slightly to 21 degrees by Thursday. That's running about a degree warmer than the September average of 20 degrees, though still below the record high of 22.9. The lake has cooled nearly 4 degrees from mid-August when we hit 25 degrees, following the typical late-summer pattern."
+Good Example: "Lake temperatures will hold near 21.3 degrees through midweek before easing to 21 degrees by Thursday. That’s about a degree above the September average of 20, yet still shy of the record 22.9. The lake has dropped nearly 4 degrees since mid-August’s peak of 25, following the usual late-summer cooling trend."
 Why this works:
-- Short, clear sentences (27, 24, 22 words)
-- Natural language ("stay steady," "running warmer," "hit 25 degrees")
+- Short, clear sentences (17, 18, 20 words)
+- Natural language ("easing to", "shy of the record", "peak of 25")
 - Sounds like someone talking
-- Total: 73 words, perfectly concise
+- Total: 55 words, perfectly concise
 
 **FINAL INSTRUCTION**
 Generate a natural-sounding lake temperature summary using everyday language. Write it like you're a local meteorologist giving a quick update on the radio - friendly, clear, and to the point. Three sentences only, keeping each one short and simple. Use the data provided but translate it into plain English that anyone would understand.
@@ -137,9 +129,6 @@ def lake_condition_summary(lake):
 
     print(f"Calling {model} with prompt")
     response = call_llm(model, prompt)
-
-    print(response)
-    exit()
 
     output = {"produced": int(datetime.now().timestamp()), "data": {"EN": response}, "model": model, "prompt": prompt}
 
