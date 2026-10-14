@@ -1,10 +1,16 @@
 import os
 import json
 import boto3
+import time
+import random
 import tempfile
 import requests
 from datetime import datetime, timedelta
 from any_llm import completion
+
+_session = requests.Session()
+_last_call = 0.0
+MIN_INTERVAL = 1.0
 
 def call_llm(model, message):
     response = completion(
@@ -14,13 +20,32 @@ def call_llm(model, message):
     return response.choices[0].message.content
 
 
-def call_url(url):
-    response = requests.get(url)
-    if response.status_code == 200:
-        data = response.json()
-        return data
-    else:
-        raise ValueError(f"Unable to access url {url}. Status code: {response.status_code}. Message: {response.text}")
+def call_url(url, max_retries=6, base_delay=2.0, timeout=30):
+    global _last_call
+    for attempt in range(max_retries + 1):
+        wait = MIN_INTERVAL - (time.monotonic() - _last_call)
+        if wait > 0:
+            time.sleep(wait)
+        _last_call = time.monotonic()
+
+        response = _session.get(url, timeout=timeout)
+
+        if response.status_code == 200:
+            return response.json()
+
+        if response.status_code in (429, 502, 503, 504) and attempt < max_retries:
+            retry_after = response.headers.get("Retry-After")
+            if retry_after and retry_after.isdigit():
+                delay = int(retry_after)
+            else:
+                delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
+            print(f"Got {response.status_code} for {url}, retrying in {delay:.1f}s "
+                  f"(attempt {attempt + 1}/{max_retries})")
+            time.sleep(delay)
+            continue
+
+        raise ValueError(f"Unable to access url {url}. Status code: {response.status_code}. "
+                         f"Message: {response.text}")
 
 
 def simstrat_daily_average_forecast(lake):
